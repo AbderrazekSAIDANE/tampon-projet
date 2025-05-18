@@ -27,7 +27,6 @@ const policesDisponibles = ["Arial", "Times New Roman", "Courier New", "Verdana"
 export default function PersonnalisationPage() {
   const { categorie } = useParams();
   const nomCategorie = categorie || "";
-
   const taillesForme = taillesDisponibles[categorie] || {};
   const tailleKeys = Object.keys(taillesForme);
 
@@ -41,7 +40,6 @@ export default function PersonnalisationPage() {
   const [afficherReel, setAfficherReel] = useState(false);
 
   useEffect(() => {
-    // Reset zoom and texte when category changes
     setFacteurZoom(3);
     setTexteHaut("");
     setTexteMilieu("Votre texte ici");
@@ -52,55 +50,43 @@ export default function PersonnalisationPage() {
   const pxWidth = width * 3.78 * (afficherReel ? 1 : facteurZoom);
   const pxHeight = height * 3.78 * (afficherReel ? 1 : facteurZoom);
   const fontSize = taillePolice * (afficherReel ? 1 : facteurZoom);
+  const couleurContour = "black";
+  const couleurTexte = "black";
 
-  let borderRadius = "0";
-  if (categorie === "rond") borderRadius = "50%";
-  else if (categorie === "ovale") borderRadius = "50% / 35%";
+  const renderCurvedText = (text, isTop, pxW, pxH, font, size, color) => {
+    const yPos = pxH / 2;
+    const radiusX = pxW * 0.4;
+    const radiusY = pxH * 0.4;
+    const sweepFlag = isTop ? 1 : 0;
+    const pathId = `curve-${isTop ? "top" : "bottom"}`;
+    const startX = pxW * 0.1;
+    const endX = pxW * 0.9;
+    const pathD = `M ${startX} ${yPos} A ${radiusX} ${radiusY} 0 0 ${sweepFlag} ${endX} ${yPos}`;
 
-const renderCurvedText = (text, isTop = true) => {
-  const baseFontSize = taillePolice * (afficherReel ? 1 : facteurZoom);
-  const yPos = pxHeight / 2;
-  const radiusX = pxWidth * 0.4;
-  const radiusY = pxHeight * 0.4;
-
-  const sweepFlag = isTop ? 1 : 0;
-  const pathId = `curve-${isTop ? "top" : "bottom"}`;
-  const startX = pxWidth * 0.1;
-  const endX = pxWidth * 0.9;
-
-  const pathD = `M ${startX} ${yPos} A ${radiusX} ${radiusY} 0 0 ${sweepFlag} ${endX} ${yPos}`;
-
-  return (
-    <svg
-      viewBox={`0 0 ${pxWidth} ${pxHeight}`}
-      width={pxWidth}
-      height={pxHeight}
-      style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-    >
-      <defs>
-        <path id={pathId} d={pathD} fill="none" />
-      </defs>
-
-      <text
-        fill="black"
-        fontSize={baseFontSize}
-        fontFamily={police}
-        textAnchor="middle"
-        dominantBaseline="middle"
+    return (
+      <svg
+        viewBox={`0 0 ${pxW} ${pxH}`}
+        width={pxW}
+        height={pxH}
+        style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
       >
-        <textPath
-          href={`#${pathId}`}
-          startOffset="50%"
-          side={isTop ? "left" : "right"}
-          method="align"
+        <defs>
+          <path id={pathId} d={pathD} fill="none" />
+        </defs>
+        <text
+          fill={color}
+          fontSize={size}
+          fontFamily={font}
+          textAnchor="middle"
+          dominantBaseline="middle"
         >
-          {isTop ? text : [...text].reverse().join("")}
-        </textPath>
-      </text>
-    </svg>
-  );
-};
-
+          <textPath href={`#${pathId}`} startOffset="50%">
+            {text}
+          </textPath>
+        </text>
+      </svg>
+    );
+  };
 
   return (
     <div className="p-6 space-y-4 max-w-lg mx-auto">
@@ -185,36 +171,79 @@ const renderCurvedText = (text, isTop = true) => {
         placeholder="Ligne(s) milieu"
       />
 
-      <div
-        style={{
-          position: "relative",
-          width: `${pxWidth}px`,
-          height: `${pxHeight}px`,
-          border: "3px solid black",
-          borderRadius,
-          fontSize: `${fontSize}px`,
-          fontFamily: police,
-          background: "white",
-          overflow: "hidden",
-        }}
-      >
-        {renderCurvedText(texteHaut, true)}
-        {renderCurvedText(texteBas, false)}
+      {categorie === "ovale" ? (
+        <svg
+          width={pxWidth}
+          height={pxHeight}
+          viewBox={`0 0 ${pxWidth} ${pxHeight}`}
+          style={{ display: "block", background: "white" }}
+        >
+          <ellipse
+            cx={pxWidth / 2}
+            cy={pxHeight / 2}
+            rx={pxWidth / 2 - 3}
+            ry={pxHeight / 2 - 3}
+            fill="white"
+            stroke={couleurContour}
+            strokeWidth="3"
+          />
+          {texteHaut && renderCurvedText(texteHaut, true, pxWidth, pxHeight, police, fontSize, couleurTexte)}
+          {texteBas && renderCurvedText(texteBas, false, pxWidth, pxHeight, police, fontSize, couleurTexte)}
+          <foreignObject x={0} y={0} width={pxWidth} height={pxHeight} style={{ pointerEvents: "none" }}>
+            <div
+              xmlns="http://www.w3.org/1999/xhtml"
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100%",
+                fontSize: `${fontSize}px`,
+                fontFamily: police,
+                textAlign: "center",
+                color: couleurTexte,
+                whiteSpace: "pre-line",
+                lineHeight: 1,
+              }}
+            >
+              {texteMilieu}
+            </div>
+          </foreignObject>
+        </svg>
+      ) : (
         <div
           style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            textAlign: "center",
-            whiteSpace: "pre-line",
-            lineHeight: 1,
-            padding: "4px",
+            position: "relative",
+            width: `${pxWidth}px`,
+            height: `${pxHeight}px`,
+            border: `3px solid ${couleurContour}`,
+            borderRadius: categorie === "rond" ? "50%" : "0",
+            fontSize: `${fontSize}px`,
+            fontFamily: police,
+            background: "white",
+            overflow: "hidden",
+            color: couleurTexte,
           }}
         >
-          {texteMilieu}
+          {renderCurvedText(texteHaut, true, pxWidth, pxHeight, police, fontSize, couleurTexte)}
+          {renderCurvedText(texteBas, false, pxWidth, pxHeight, police, fontSize, couleurTexte)}
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              textAlign: "center",
+              whiteSpace: "pre-line",
+              lineHeight: 1,
+              padding: "4px",
+              userSelect: "none",
+              pointerEvents: "none",
+            }}
+          >
+            {texteMilieu}
+          </div>
         </div>
-      </div>
+      )}
 
       <button
         onClick={() => setAfficherReel((prev) => !prev)}
