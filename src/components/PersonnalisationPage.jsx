@@ -1,4 +1,3 @@
-// PersonnalisationPage.jsx
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
@@ -23,6 +22,13 @@ const taillesDisponibles = {
 };
 
 const policesDisponibles = ["Arial", "Times New Roman", "Courier New", "Verdana"];
+
+// Fonction pour ajuster la taille de la police
+const getAdjustedFontSize = (text, baseFontSize, maxWidth) => {
+  const approxTextWidth = text.length * (baseFontSize * 0.6);
+  const ratio = maxWidth / approxTextWidth;
+  return ratio >= 1 ? baseFontSize : Math.floor(baseFontSize * ratio);
+};
 
 export default function PersonnalisationPage() {
   const { categorie } = useParams();
@@ -49,33 +55,81 @@ export default function PersonnalisationPage() {
   const { width = 0, height = 0 } = taillesForme[tailleKey] || {};
   const pxWidth = width * 3.78 * (afficherReel ? 1 : facteurZoom);
   const pxHeight = height * 3.78 * (afficherReel ? 1 : facteurZoom);
-  const fontSize = taillePolice * (afficherReel ? 1 : facteurZoom);
   const couleurContour = "black";
   const couleurTexte = "black";
 
+const handleAddToCart = async () => {
+  const orderData = {
+    categorie,
+    taille: tailleKey,
+    texteHaut,
+    texteMilieu,
+    texteBas,
+    police,
+    taillePolice,
+    zoom: facteurZoom,
+  };
+
+  try {
+        const response = await fetch("http://localhost:5001/api/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(orderData),
+          // credentials: 'include' // si besoin de gérer les cookies
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Erreur lors de l’envoi de la commande.");
+        }
+
+        const savedOrder = await response.json();
+        alert("Commande enregistrée avec succès !");
+        console.log("Order saved:", savedOrder);
+      } catch (err) {
+        alert("Erreur : " + err.message);
+        console.error(err);
+      }
+    };
+
   const renderCurvedText = (text, isTop, pxW, pxH, font, size, color) => {
-    const yPos = pxH / 2;
+    if (!text) return null;
+
+    const centerX = pxW / 2;
+    const centerY = pxH / 2;
     const radiusX = pxW * 0.4;
     const radiusY = pxH * 0.4;
-    const sweepFlag = isTop ? 1 : 0;
+    const offsetY = isTop ? centerY - radiusY : centerY + radiusY;
     const pathId = `curve-${isTop ? "top" : "bottom"}`;
-    const startX = pxW * 0.1;
-    const endX = pxW * 0.9;
-    const pathD = `M ${startX} ${yPos} A ${radiusX} ${radiusY} 0 0 ${sweepFlag} ${endX} ${yPos}`;
+
+    const startX = centerX - radiusX;
+    const endX = centerX + radiusX;
+    const sweepFlag = isTop ? 1 : 0;
+
+    const pathD = `M ${startX} ${offsetY} A ${radiusX} ${radiusY} 0 0 ${sweepFlag} ${endX} ${offsetY}`;
+    const adjustedFontSize = getAdjustedFontSize(text, size, radiusX * 2);
 
     return (
       <svg
         viewBox={`0 0 ${pxW} ${pxH}`}
         width={pxW}
         height={pxH}
-        style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          pointerEvents: "none",
+          overflow: "visible",
+        }}
       >
         <defs>
           <path id={pathId} d={pathD} fill="none" />
         </defs>
         <text
           fill={color}
-          fontSize={size}
+          fontSize={adjustedFontSize}
           fontFamily={font}
           textAnchor="middle"
           dominantBaseline="middle"
@@ -85,6 +139,33 @@ export default function PersonnalisationPage() {
           </textPath>
         </text>
       </svg>
+    );
+  };
+
+  const renderCenteredText = (text, pxW, pxH, font, size, color) => {
+    if (!text) return null;
+
+    const maxWidth = pxW * 0.8;
+    const adjustedFontSize = getAdjustedFontSize(text, size, maxWidth);
+
+    return (
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          fontFamily: font,
+          fontSize: adjustedFontSize,
+          color: color,
+          whiteSpace: "pre-line",
+          textAlign: "center",
+          lineHeight: 1,
+          pointerEvents: "none",
+        }}
+      >
+        {text}
+      </div>
     );
   };
 
@@ -171,12 +252,13 @@ export default function PersonnalisationPage() {
         placeholder="Ligne(s) milieu"
       />
 
+      {/* Affichage SVG/Forme */}
       {categorie === "ovale" ? (
         <svg
           width={pxWidth}
           height={pxHeight}
           viewBox={`0 0 ${pxWidth} ${pxHeight}`}
-          style={{ display: "block", background: "white" }}
+          style={{ display: "block", background: "white", position: "relative" }}
         >
           <ellipse
             cx={pxWidth / 2}
@@ -187,26 +269,10 @@ export default function PersonnalisationPage() {
             stroke={couleurContour}
             strokeWidth="3"
           />
-          {texteHaut && renderCurvedText(texteHaut, true, pxWidth, pxHeight, police, fontSize, couleurTexte)}
-          {texteBas && renderCurvedText(texteBas, false, pxWidth, pxHeight, police, fontSize, couleurTexte)}
-          <foreignObject x={0} y={0} width={pxWidth} height={pxHeight} style={{ pointerEvents: "none" }}>
-            <div
-              xmlns="http://www.w3.org/1999/xhtml"
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "100%",
-                fontSize: `${fontSize}px`,
-                fontFamily: police,
-                textAlign: "center",
-                color: couleurTexte,
-                whiteSpace: "pre-line",
-                lineHeight: 1,
-              }}
-            >
-              {texteMilieu}
-            </div>
+          {renderCurvedText(texteHaut, true, pxWidth, pxHeight, police, taillePolice, couleurTexte)}
+          {renderCurvedText(texteBas, false, pxWidth, pxHeight, police, taillePolice, couleurTexte)}
+          <foreignObject x={0} y={0} width={pxWidth} height={pxHeight}>
+            {renderCenteredText(texteMilieu, pxWidth, pxHeight, police, taillePolice, couleurTexte)}
           </foreignObject>
         </svg>
       ) : (
@@ -217,31 +283,13 @@ export default function PersonnalisationPage() {
             height: `${pxHeight}px`,
             border: `3px solid ${couleurContour}`,
             borderRadius: categorie === "rond" ? "50%" : "0",
-            fontSize: `${fontSize}px`,
-            fontFamily: police,
             background: "white",
             overflow: "hidden",
-            color: couleurTexte,
           }}
         >
-          {renderCurvedText(texteHaut, true, pxWidth, pxHeight, police, fontSize, couleurTexte)}
-          {renderCurvedText(texteBas, false, pxWidth, pxHeight, police, fontSize, couleurTexte)}
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              textAlign: "center",
-              whiteSpace: "pre-line",
-              lineHeight: 1,
-              padding: "4px",
-              userSelect: "none",
-              pointerEvents: "none",
-            }}
-          >
-            {texteMilieu}
-          </div>
+          {renderCurvedText(texteHaut, true, pxWidth, pxHeight, police, taillePolice, couleurTexte)}
+          {renderCurvedText(texteBas, false, pxWidth, pxHeight, police, taillePolice, couleurTexte)}
+          {renderCenteredText(texteMilieu, pxWidth, pxHeight, police, taillePolice, couleurTexte)}
         </div>
       )}
 
@@ -252,9 +300,13 @@ export default function PersonnalisationPage() {
         {afficherReel ? "Revenir au zoom" : "Afficher en taille réelle"}
       </button>
 
-      <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      <button
+        onClick={handleAddToCart}
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
         Ajouter au panier
       </button>
+
     </div>
   );
 }
