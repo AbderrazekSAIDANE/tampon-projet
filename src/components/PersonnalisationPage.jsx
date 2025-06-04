@@ -197,15 +197,19 @@ export default function PersonnalisationPage() {
                 justifyContent: "center",
                 alignItems: "center",
                 height: "100%",
+                width: "100%",
+                padding: "6px",
                 fontSize: `${fontSize}px`,
                 fontFamily: police,
-                textAlign: "center",
                 color: couleurTexte,
-                whiteSpace: "pre-line",
-                lineHeight: 1,
+                textAlign: "center",
+                whiteSpace: "normal",
+                lineHeight: 1.2,
+                wordWrap: "break-word",
+                overflowWrap: "break-word",
               }}
             >
-              {texteMilieu}
+              <div style={{ maxWidth: "80%" }}>{texteMilieu}</div>
             </div>
           </foreignObject>
         </svg>
@@ -226,22 +230,51 @@ export default function PersonnalisationPage() {
         >
           {renderCurvedText(texteHaut, true, pxWidth, pxHeight, police, fontSize, couleurTexte)}
           {renderCurvedText(texteBas, false, pxWidth, pxHeight, police, fontSize, couleurTexte)}
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              textAlign: "center",
-              whiteSpace: "pre-line",
-              lineHeight: 1,
-              padding: "4px",
-              userSelect: "none",
-              pointerEvents: "none",
-            }}
-          >
-            {texteMilieu}
-          </div>
+
+          {categorie === "rectangle" ? (
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                textAlign: "center",
+                lineHeight: 1.2,
+                width: "90%",
+                padding: "4px",
+                userSelect: "none",
+                pointerEvents: "none",
+                whiteSpace: "pre-wrap", // ✅ Affiche les \n
+                wordWrap: "break-word",
+                overflowWrap: "break-word",
+                fontSize: `${fontSize}px`,
+                fontFamily: police,
+                color: couleurTexte,
+              }}
+            >
+              {texteMilieu}
+            </div>
+          ) : (
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                textAlign: "center",
+                whiteSpace: "normal",
+                lineHeight: 1.2,
+                width: "80%",
+                wordWrap: "break-word",
+                overflowWrap: "break-word",
+                padding: "4px",
+                userSelect: "none",
+                pointerEvents: "none",
+              }}
+            >
+              {texteMilieu}
+            </div>
+          )}
         </div>
       )}
 
