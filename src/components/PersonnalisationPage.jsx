@@ -53,6 +53,42 @@ export default function PersonnalisationPage() {
   const couleurContour = "black";
   const couleurTexte = "black";
 
+const handleAddToCart = async () => {
+  const orderData = {
+    categorie,
+    taille: tailleKey,
+    texteHaut,
+    texteMilieu,
+    texteBas,
+    police,
+    taillePolice,
+    zoom: facteurZoom,
+  };
+
+  try {
+        const response = await fetch("http://localhost:5001/api/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(orderData),
+          // credentials: 'include' // si besoin de gérer les cookies
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Erreur lors de l’envoi de la commande.");
+        }
+
+        const savedOrder = await response.json();
+        alert("Commande enregistrée avec succès !");
+        console.log("Order saved:", savedOrder);
+      } catch (err) {
+        alert("Erreur : " + err.message);
+        console.error(err);
+      }
+    };
+
   const renderCurvedText = (text, isTop, pxW, pxH, font, size, color) => {
     const yPos = pxH / 2;
     const radiusX = pxW * 0.4;
@@ -197,19 +233,15 @@ export default function PersonnalisationPage() {
                 justifyContent: "center",
                 alignItems: "center",
                 height: "100%",
-                width: "100%",
-                padding: "6px",
                 fontSize: `${fontSize}px`,
                 fontFamily: police,
-                color: couleurTexte,
                 textAlign: "center",
-                whiteSpace: "normal",
-                lineHeight: 1.2,
-                wordWrap: "break-word",
-                overflowWrap: "break-word",
+                color: couleurTexte,
+                whiteSpace: "pre-line",
+                lineHeight: 1,
               }}
             >
-              <div style={{ maxWidth: "80%" }}>{texteMilieu}</div>
+              {texteMilieu}
             </div>
           </foreignObject>
         </svg>
@@ -230,51 +262,22 @@ export default function PersonnalisationPage() {
         >
           {renderCurvedText(texteHaut, true, pxWidth, pxHeight, police, fontSize, couleurTexte)}
           {renderCurvedText(texteBas, false, pxWidth, pxHeight, police, fontSize, couleurTexte)}
-
-          {categorie === "rectangle" ? (
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                textAlign: "center",
-                lineHeight: 1.2,
-                width: "90%",
-                padding: "4px",
-                userSelect: "none",
-                pointerEvents: "none",
-                whiteSpace: "pre-wrap", // ✅ Affiche les \n
-                wordWrap: "break-word",
-                overflowWrap: "break-word",
-                fontSize: `${fontSize}px`,
-                fontFamily: police,
-                color: couleurTexte,
-              }}
-            >
-              {texteMilieu}
-            </div>
-          ) : (
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                textAlign: "center",
-                whiteSpace: "normal",
-                lineHeight: 1.2,
-                width: "80%",
-                wordWrap: "break-word",
-                overflowWrap: "break-word",
-                padding: "4px",
-                userSelect: "none",
-                pointerEvents: "none",
-              }}
-            >
-              {texteMilieu}
-            </div>
-          )}
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              textAlign: "center",
+              whiteSpace: "pre-line",
+              lineHeight: 1,
+              padding: "4px",
+              userSelect: "none",
+              pointerEvents: "none",
+            }}
+          >
+            {texteMilieu}
+          </div>
         </div>
       )}
 
@@ -285,7 +288,10 @@ export default function PersonnalisationPage() {
         {afficherReel ? "Revenir au zoom" : "Afficher en taille réelle"}
       </button>
 
-      <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      <button
+        onClick={handleAddToCart}
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
         Ajouter au panier
       </button>
     </div>
