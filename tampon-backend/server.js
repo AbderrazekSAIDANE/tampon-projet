@@ -1,7 +1,11 @@
+require("dotenv").config();
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const uploadRoutes = require('./routes/uploadRoutes');
+const fileUpload = require('express-fileupload');
+
 
 dotenv.config();
 connectDB();
@@ -14,12 +18,15 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 };
+app.use(fileUpload());
 
 app.use(cors(corsOptions));
 
 app.use(express.json());
 
 app.use('/api/orders', require('./routes/orders'));
+
+app.use('/api', uploadRoutes);
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

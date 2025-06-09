@@ -1,0 +1,5 @@
+npm install axios
+npm install dotenv
+npm install aws-sdk
+npm install express-fileupload aws-sdk dotenv cors
+

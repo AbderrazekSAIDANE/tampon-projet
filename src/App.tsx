@@ -1,11 +1,17 @@
+// App.jsx
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ShoppingCart, Star } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import AppRoutes from "./AppRoutes";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import PersonnalisationPage from "./components/PersonnalisationPage";
 
+const App = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<PersonnalisationPage />} />
+        {/* Tu peux ajouter d'autres routes ici si nécessaire */}
+      </Routes>
+    </Router>
+  );
+};
 
-export default function App() {
-  return <AppRoutes />;
-}
+export default App;
