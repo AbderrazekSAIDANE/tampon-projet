@@ -2,4 +2,9 @@ npm install axios
 npm install dotenv
 npm install aws-sdk
 npm install express-fileupload aws-sdk dotenv cors
-
+npm install pdf-poppler
+brew install poppler
+npm install tesseract.js
+npm install tesseract.js@2
+arch -arm64 brew install poppler
+brew install cairo

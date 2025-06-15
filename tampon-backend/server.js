@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const uploadRoutes = require('./routes/uploadRoutes');
 const fileUpload = require('express-fileupload');
-
+const ocrRoutes = require('./routes/ocrRoutes'); // 👈 ajouté ici
 
 dotenv.config();
 connectDB();
@@ -18,15 +18,15 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 };
-app.use(fileUpload());
 
 app.use(cors(corsOptions));
-
 app.use(express.json());
+app.use(fileUpload());
 
+// 🔗 Routes
 app.use('/api/orders', require('./routes/orders'));
-
 app.use('/api', uploadRoutes);
+app.use('/api', ocrRoutes); // 👈 ajout de la route OCR
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
