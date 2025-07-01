@@ -6,6 +6,7 @@ const connectDB = require('./config/db');
 const uploadRoutes = require('./routes/uploadRoutes');
 const fileUpload = require('express-fileupload');
 const ocrRoutes = require('./routes/ocrRoutes'); // 👈 ajouté ici
+const expressFileUpload = require("express-fileupload");
 
 dotenv.config();
 connectDB();
@@ -27,6 +28,8 @@ app.use(fileUpload());
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api', uploadRoutes);
 app.use('/api', ocrRoutes); // 👈 ajout de la route OCR
+
+app.use(expressFileUpload({ useTempFiles: false }));
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

@@ -8,3 +8,7 @@ npm install tesseract.js
 npm install tesseract.js@2
 arch -arm64 brew install poppler
 brew install cairo
+npm install express-fileupload tesseract.js
+brew install opencv-python-headless
+arch -arm64 brew install opencl-headers
+arch -arm64 brew install --cask opencore-patcher
